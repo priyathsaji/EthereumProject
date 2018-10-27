@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ethereum</title>
+    <script src="./node_modules/web3/dist/web3.min.js"></script>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    
+        <div class="header">
+                <h2>Smart Contract</h2>
+                <ul>
+                    <li><button onclick="selectAdmin()" id="admin">Admin</button></li>
+                    <li><button onclick="selectDoc()" id="doc">Doctor</button></li>
+                    <li><button onclick="selectPat()" id="pat">Patient</button></li>
+                </ul>
+            </div>
+
+    <div id="admin-container" class="admin-container">
+        <h1>Registration</h1>
+        <div class="selector">
+            <button id="doctor" onClick="selectDoctor()">Doctor</button>
+            <button id="patient" onClick="selectPatient()">Patient</button>
+        </div>
+        <input type="text" placeholder="Name" id="name">
+        <input type="number" placeholder="Age"id="age">
+        <input type="text" placeholder="Account" id="account">
+        <button onclick="AddUser()">Submit</button>
+    </div>
+
+    <div id="doctor-container" class="doctor-container">
+        <h1>Doctor</h1>
+        <div class="selector">
+            <button id="doc-details" onClick="docDetails()">Personal Details</button>
+            <button id="doc-patient" onClick="docPatient()">Patient Details</button>
+        </div>
+        <div id="personal-detail">
+                <div class="sub-container"><h3>Name : </h3><h2 id="doc-name"></h2></div>
+                <div class="sub-container"><h3>Age : </h3><h2 id="doc-age"></h2></div>
+        </div>
+        <div id="patient-details">
+            <div class="sub-patient-details">
+                <h2>fafasdlkfjakhfkasjfksajdlkfjalkfaf</h2>
+                <button>View Patient</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="patient-container" class="doctor-container">
+            <h1>Patient</h1>
+            <div class="selector">
+                <button id="pat-details" onClick="patDetails()">Personal Details</button>
+                <button id="allow-doc" onClick="allowDoc()">Allow Doctor</button>
+            </div>
+            <div id="pat-personal-detail">
+                    <div class="sub-container"><h3>Name : </h3><h2 id="pat-name"></h2></div>
+                    <div class="sub-container"><h3>Email : </h3><h2 id="pat-age"></h2></div>
+            </div>
+            <div id="allow-doctor">
+                <div>
+                    <input type="text"id="doctor-address" placeholder="Enter Doctors Address">
+                    <button onclick="allowDoctor()">Allow Doctor</button>
+                </div>
+            </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+        var selector = 1;
+        var optionSelected = 1;
+        
+        function selectDoctor(){
+            selector = 1;
+            document.getElementById('doctor').style.border = "5px solid rgb(64, 179, 224)";
+            document.getElementById('patient').style.border = "none";
+            console.log("button clicked");
+        }
+
+        function selectPatient(){
+            selector = 2;
+            document.getElementById('doctor').style.border = "none";
+            document.getElementById('patient').style.border = "5px solid rgb(64, 179, 224)";
+            console.log("button clicked");
+        }
+
+        function selectAdmin(){
+            optionSelected = 1;
+            document.getElementById('admin').style.border = "3px solid rgb(64, 179, 224)";
+            document.getElementById('doc').style.border="none";
+            document.getElementById('pat').style.border="none";
+            document.getElementById('admin-container').style.display="grid";
+            document.getElementById('doctor-container').style.display="none";
+            document.getElementById('patient-container').style.display="none";
+
+        
+        }
+        function selectDoc(){
+            optionSelected = 2;
+            document.getElementById('admin').style.border = "none";
+            document.getElementById('doc').style.border="3px solid rgb(64, 179, 224)";
+            document.getElementById('pat').style.border="none";
+            document.getElementById('admin-container').style.display="none";
+            document.getElementById('doctor-container').style.display="grid";
+            document.getElementById('patient-container').style.display="none";
+        }
+        function selectPat(){
+            optionSelected = 3;
+            document.getElementById('admin').style.border = "none";
+            document.getElementById('doc').style.border="none";
+            document.getElementById('pat').style.border="3px solid rgb(64, 179, 224)";
+            document.getElementById('admin-container').style.display="none";
+            document.getElementById('doctor-container').style.display="none";
+            document.getElementById('patient-container').style.display="grid";
+        }
+
+        function docDetails(){
+            document.getElementById('doc-patient').style.border = "none"
+            document.getElementById('patient-details').style.display = "none";
+           
+            Hospital.getDoctor((err,res)=>{
+                if(err) throw err;
+                console.log(res[0],res[1].c[0]);
+                if(res[0] === ''){
+                    alert("You not a doctor.. Check the account on MetaMask")
+                }else{
+                    document.getElementById('doc-details').style.border = "5px solid rgb(64, 179, 224)"
+                    document.getElementById('personal-detail').style.display = "grid"
+                    document.getElementById('doc-name').innerHTML = res[0];
+                    document.getElementById('doc-age').innerHTML = res[1].c[0];
+                }
+            })
+        }
+        function docPatient(){
+            document.getElementById('doc-details').style.border = "none"
+            document.getElementById('doc-patient').style.border = "5px solid rgb(64, 179, 224)"
+            document.getElementById('personal-detail').style.display = "none";
+            var dash = document.getElementById('patient-details');
+            dash.style.display = "grid";
+            dash.innerHTML = '';
+            Hospital.getPatients((err,response)=>{
+                
+                for(i=0;i<response.length;i++){
+                    var button = document.createElement('button')
+                    button.id=i;
+                    button.innerHTML="View Details";
+                    button.addEventListener('click',(e)=>{
+                        var id = e.target.id;
+                        Hospital.getPatientDetails(id,(err,response)=>{
+                            document.getElementById('h'+id).innerHTML = response[0] + ' ( '+response[1]+' ) ';
+                            e.target.style.display="none";
+
+                        })
+                    })
+                    var h2 = document.createElement('h2');
+                    h2.id="h"+i;
+                    h2.innerHTML = response[0];
+                    var div = document.createElement('div');
+                    div.className = "sub-patient-details";
+                    div.appendChild(h2);
+                    div.appendChild(button);
+                    dash.appendChild(div);
+                }
+            })
+            
+        }
+        
+
+        function patDetails(){
+            document.getElementById('allow-doc').style.border = "none";
+            document.getElementById('allow-doctor').style.display = "none";
+            
+            Hospital.getPatient((err,res)=>{
+                if(err) throw err;
+                if(res[0] === ''){
+                    alert("You not a Patient.. Check the account on MetaMask")
+                }else{
+                    document.getElementById('pat-details').style.border = "5px solid rgb(64, 179, 224)"
+                    document.getElementById('pat-personal-detail').style.display = "grid"
+                    document.getElementById('pat-name').innerHTML = res[0];
+                    document.getElementById('pat-age').innerHTML = res[1].c[0];
+                }
+            })
+        }
+
+        function allowDoc(){
+            document.getElementById('allow-doc').style.border = "5px solid rgb(64, 179, 224)"
+            document.getElementById('pat-details').style.border = "none";
+            document.getElementById('pat-personal-detail').style.display = "none";
+            document.getElementById('allow-doctor').style.display = "grid";
+            
+
+        }
+
+        function allowDoctor(){
+            var account = document.getElementById('doctor-address').value;
+            Hospital.allowDoctor(account,(err)=>{
+                if(err){
+                    alert("your are not a registered patient..");
+                };
+                console.log(succesfull);
+                alert("the doctor has been given access");
+            })
+        }
+
+
+
+
+
+
+
+
+        web3 = new Web3(web3.currentProvider);
+        var HospitalContract = web3.eth.contract([
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_docAddress",
+				"type": "address"
+			}
+		],
+		"name": "allowDoctor",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"name": "_age",
+				"type": "uint256"
+			},
+			{
+				"name": "_docAddress",
+				"type": "address"
+			}
+		],
+		"name": "RegDoctor",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"name": "_age",
+				"type": "uint256"
+			},
+			{
+				"name": "_patAddress",
+				"type": "address"
+			}
+		],
+		"name": "RegPatient",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "docAddress",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getDoctor",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getPatient",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_index",
+				"type": "uint256"
+			}
+		],
+		"name": "getPatientDetails",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			},
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getPatients",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "patAddress",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+]);
+    var Hospital = HospitalContract.at('0x573f96986c7f3e8a290de0bb4f6b88f82720212b');
+    console.log(Hospital);
+
+
+    function AddUser(){
+        var name = document.getElementById('name').value;
+        var age = document.getElementById('age').value;
+        var account = document.getElementById('account').value;
+        console.log(name,age,account);
+        if(selector == 1){
+            console.log("1");
+            Hospital.RegDoctor(name,age,account,(err)=>{
+                if(err) throw err;
+                alert("Doctor Adder")
+            })
+        }else if(selector == 2){
+            console.log("2");
+            Hospital.RegPatient(name,age,account,(err)=>{
+                if(err) throw err;
+                alert("Patient Added")
+            })
+        }
+    }
+    </script>
+</body>
+</html>
